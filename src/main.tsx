@@ -45,7 +45,98 @@ function App(){
  {tab==="Dashboard"&&<><div className="stats-grid"><div className="stat"><span>Total products</span><b>{adminData.products.length}</b></div><div className="stat"><span>Active products</span><b>{adminData.products.filter(p=>p.active!==false).length}</b></div><div className="stat"><span>Collections</span><b>{adminData.collections.length}</b></div><div className="stat"><span>Storage</span><b>Online</b></div></div><div className="admin-panel"><h2>Quick actions</h2><p>Add products, upload images and update your store content. Always check the save confirmation.</p><button className="button dark" onClick={()=>{setEditProduct({id:crypto.randomUUID(),name:"",category:"Women",description:"",price_pkr:0,price_bdt:0,price_eur:0,sizes:["S","M","L"],colors:[],stock:0,images:[],active:true,featured:false,badge:""});setTab("Products")}}>Add a product <Plus size={16}/></button></div></>}
  {tab==="Products"&&<><div className="panel-toolbar"><p>{adminData.products.length} products in catalogue</p><button className="button dark" onClick={()=>setEditProduct({id:crypto.randomUUID(),name:"",category:"Women",description:"",price_pkr:0,price_bdt:0,price_eur:0,sizes:["S","M","L"],colors:[],stock:0,images:[],active:true,featured:false,badge:""})}><Plus size={16}/> Add product</button></div>{editProduct&&<div className="admin-panel product-editor"><div className="panel-title"><h2>{adminData.products.some(p=>p.id===editProduct.id)?"Edit product":"New product"}</h2><button className="icon-button" onClick={()=>setEditProduct(null)}><X/></button></div><div className="editor-grid">{field("Product name",editProduct.name,v=>setEditProduct({...editProduct,name:v}))}<label className="field"><span>Category</span><select value={editProduct.category} onChange={e=>setEditProduct({...editProduct,category:e.target.value})}>{["Women","Men","Unisex","Modest Wear","Accessories","New Arrivals"].map(x=><option key={x}>{x}</option>)}</select></label>{field("Price (PKR)",editProduct.price_pkr,v=>setEditProduct({...editProduct,price_pkr:Number(v)}),"number")}{field("Price (BDT)",editProduct.price_bdt,v=>setEditProduct({...editProduct,price_bdt:Number(v)}),"number")}{field("Price (EUR)",editProduct.price_eur,v=>setEditProduct({...editProduct,price_eur:Number(v)}),"number")}{field("Stock quantity",editProduct.stock,v=>setEditProduct({...editProduct,stock:Number(v)}),"number")}{field("Sizes (comma separated)",editProduct.sizes.join(", "),v=>setEditProduct({...editProduct,sizes:v.split(",").map(x=>x.trim()).filter(Boolean)}))}{field("Colours (comma separated)",editProduct.colors.join(", "),v=>setEditProduct({...editProduct,colors:v.split(",").map(x=>x.trim()).filter(Boolean)}))}{field("Badge (e.g. New / Sale)",editProduct.badge,v=>setEditProduct({...editProduct,badge:v}))}<label className="field full-span"><span>Description</span><textarea rows={4} value={editProduct.description} onChange={e=>setEditProduct({...editProduct,description:e.target.value})}/></label><label className="check-field"><input type="checkbox" checked={editProduct.active} onChange={e=>setEditProduct({...editProduct,active:e.target.checked})}/> Visible on storefront</label><label className="check-field"><input type="checkbox" checked={editProduct.featured} onChange={e=>setEditProduct({...editProduct,featured:e.target.checked})}/> Featured product</label><div className="image-upload full-span"><span>Product photos</span><div className="upload-previews">{editProduct.images.map((src,i)=><div key={src+i}><img src={src} alt="Product"/><button onClick={()=>setEditProduct({...editProduct,images:editProduct.images.filter((_,j)=>j!==i)})} aria-label="Remove image"><X size={14}/></button></div>)}</div><label className="upload-button"><Upload size={16}/>{fileBusy?"Uploading…":"Upload photos"}<input type="file" accept="image/*" multiple onChange={async e=>{const fs=Array.from(e.target.files||[]);const urls:string[]=[];for(const f of fs){const url=await uploadAdmin(f);if(url)urls.push(url)}if(urls.length)setEditProduct(prev=>prev?({...prev,images:[...prev.images,...urls]}):prev);e.currentTarget.value=""}}/></label><small>Image upload requires the deployed, authenticated upload function.</small></div></div><div className="editor-actions"><button className="button outline" onClick={()=>setEditProduct(null)}>Cancel</button><button className="button dark" disabled={saving} onClick={saveProduct}><Save size={16}/>{saving?"Saving…":"Save product"}</button></div></div>}<div className="admin-panel table-panel"><div className="admin-table">{adminData.products.map(p=><div className="product-row" key={p.id}><img src={imageFor(p)||"https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=150&q=70"} alt=""/><div className="row-name"><b>{p.name||"Untitled product"}</b><span>{p.category} · Stock {p.stock}</span></div><b>{money(p.price_pkr,"PKR")}</b><span className={p.active===false?"pill off":"pill"}>{p.active===false?"Hidden":"Visible"}</span><button className="icon-button" onClick={()=>setEditProduct({...p,images:[...(p.images||[])]})} aria-label="Edit"><Settings size={17}/></button><button className="icon-button danger" onClick={()=>removeProduct(p.id)} aria-label="Delete"><Trash2 size={17}/></button></div>)}{!adminData.products.length&&<div className="empty-state">No products yet. Add your first product above.</div>}</div></div></>}
  {tab==="Collections"&&<div className="admin-panel"><h2>Collections</h2>{adminData.collections.map((c,i)=><div className="collection-edit" key={c.id}><img src={c.image} alt=""/><div>{field("Name",c.name,v=>setAdminData(d=>({...d,collections:d.collections.map((x,j)=>j===i?{...x,name:v}:x)})))}{field("Description",c.description,v=>setAdminData(d=>({...d,collections:d.collections.map((x,j)=>j===i?{...x,description:v}:x)})))}</div><button className="icon-button" onClick={()=>setAdminData(d=>({...d,collections:d.collections.filter(x=>x.id!==c.id)}))}><Trash2/></button></div>)}<button className="button outline" onClick={()=>setAdminData(d=>({...d,collections:[...d.collections,{id:crypto.randomUUID(),name:"New Collection",description:"",image:"https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=80",active:true}]}))}><Plus size={16}/> Add collection</button><div className="editor-actions"><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/> Save collections</button></div></div>}
- {tab==="Homepage & brand"&&<div className="admin-panel"><h2>Homepage and brand settings</h2><div className="editor-grid">{field("Brand name",adminData.settings.brand_name,v=>setAdminData(d=>({...d,settings:{...d.settings,brand_name:v}})))}{field("Tagline",adminData.settings.tagline,v=>setAdminData(d=>({...d,settings:{...d.settings,tagline:v}})))}{field("Hero heading",adminData.settings.hero_heading,v=>setAdminData(d=>({...d,settings:{...d.settings,hero_heading:v}})))}{field("Hero text",adminData.settings.hero_text,v=>setAdminData(d=>({...d,settings:{...d.settings,hero_text:v}})))}{field("Hero image URL",adminData.settings.hero_image,v=>setAdminData(d=>({...d,settings:{...d.settings,hero_image:v}})))}{field("Logo image URL",adminData.settings.logo_url,v=>setAdminData(d=>({...d,settings:{...d.settings,logo_url:v}})))}{field("WhatsApp number (international format)",adminData.settings.whatsapp,v=>setAdminData(d=>({...d,settings:{...d.settings,whatsapp:v}})))}{field("Email",adminData.settings.email,v=>setAdminData(d=>({...d,settings:{...d.settings,email:v}})))}{field("Address",adminData.settings.address,v=>setAdminData(d=>({...d,settings:{...d.settings,address:v}})))}{field("Instagram URL",adminData.settings.instagram,v=>setAdminData(d=>({...d,settings:{...d.settings,instagram:v}})))}{field("Facebook URL",adminData.settings.facebook,v=>setAdminData(d=>({...d,settings:{...d.settings,facebook:v}})))}{field("TikTok URL",adminData.settings.tiktok,v=>setAdminData(d=>({...d,settings:{...d.settings,tiktok:v}})))}{field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}})),"number")}{field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}})),"number")}<label className="field full-span"><span>About / Our Story</span><textarea rows={4} value={adminData.settings.about_text} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,about_text:e.target.value}}))}/></label><label className="field full-span"><span>Announcement bar</span><input value={adminData.announcement.text} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,text:e.target.value}}))}/></label><label className="check-field"><input type="checkbox" checked={adminData.announcement.active} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,active:e.target.checked}}))}/> Show announcement</label></div><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/>{saving?"Saving…":"Save and publish"}</button></div>}
+ {tab==="Homepage & brand"&&<div className="admin-panel"><h2>Homepage and brand settings</h2><div className="editor-grid">{field("Brand name",adminData.settings.brand_name,v=>setAdminData(d=>({...d,settings:{...d.settings,brand_name:v}})))}{field("Tagline",adminData.settings.tagline,v=>setAdminData(d=>({...d,settings:{...d.settings,tagline:v}})))}
+<label className="field full-span">
+  <span>Hero banner image</span>
+  <input
+    type="url"
+    placeholder="Image URL"
+    value={adminData.settings.hero_image || ""}
+    onChange={e =>
+      setAdminData(d => ({
+        ...d,
+        settings: {
+          ...d.settings,
+          hero_image: e.target.value
+        }
+      }))
+    }
+  />
+  <span>Or upload a new banner photo</span>
+  <input
+    type="file"
+    accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+    disabled={fileBusy}
+    onChange={async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (file.size > 8 * 1024 * 1024) {
+        notify("Image must be smaller than 8 MB.");
+        e.target.value = "";
+        return;
+      }
+
+      const url = await uploadAdmin(file);
+      if (url) {
+        setAdminData(d => ({
+          ...d,
+          settings: {
+            ...d.settings,
+            hero_image: url
+          }
+        }));
+        notify("Banner uploaded. Now press Save and publish.");
+      }
+
+      e.target.value = "";
+    }}
+  />
+  {fileBusy && <span>Uploading banner…</span>}
+  {adminData.settings.hero_image && (
+    <img
+      src={adminData.settings.hero_image}
+      alt="Hero banner preview"
+      style={{
+        width: "100%",
+        maxHeight: "280px",
+        objectFit: "cover",
+        borderRadius: "8px",
+        marginTop: "12px"
+      }}
+    />
+  )}
+</label>
+   {field("Hero text",adminData.settings.hero_text,v=>setAdminData(d=>({...d,settings:{...d.settings,hero_text:v}})))}<label className="field full-span">
+  <span>Hero banner image</span>
+  <input
+    type="url"
+    placeholder="Paste image URL or upload a photo below"
+    value={adminData.settings.hero_image || ""}
+    onChange={e => setAdminData(d => ({
+      ...d,
+      settings: {
+        ...d.settings,
+        hero_image: e.target.value
+      }
+    }))}
+  />
+</label>
+{adminData.settings.hero_image && (
+  <div className="field full-span">
+    <span>Current banner preview</span>
+    <img
+      src={adminData.settings.hero_image}
+      alt="Hero banner preview"
+      style={{
+        width: "100%",
+        maxHeight: "280px",
+        objectFit: "cover",
+        borderRadius: "8px"
+      }}
+    />
+  </div>
+)}{field("Logo image URL",adminData.settings.logo_url,v=>setAdminData(d=>({...d,settings:{...d.settings,logo_url:v}})))}{field("WhatsApp number (international format)",adminData.settings.whatsapp,v=>setAdminData(d=>({...d,settings:{...d.settings,whatsapp:v}})))}{field("Email",adminData.settings.email,v=>setAdminData(d=>({...d,settings:{...d.settings,email:v}})))}{field("Address",adminData.settings.address,v=>setAdminData(d=>({...d,settings:{...d.settings,address:v}})))}{field("Instagram URL",adminData.settings.instagram,v=>setAdminData(d=>({...d,settings:{...d.settings,instagram:v}})))}{field("Facebook URL",adminData.settings.facebook,v=>setAdminData(d=>({...d,settings:{...d.settings,facebook:v}})))}{field("TikTok URL",adminData.settings.tiktok,v=>setAdminData(d=>({...d,settings:{...d.settings,tiktok:v}})))}{field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}})),"number")}{field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}})),"number")}<label className="field full-span"><span>About / Our Story</span><textarea rows={4} value={adminData.settings.about_text} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,about_text:e.target.value}}))}/></label><label className="field full-span"><span>Announcement bar</span><input value={adminData.announcement.text} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,text:e.target.value}}))}/></label><label className="check-field"><input type="checkbox" checked={adminData.announcement.active} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,active:e.target.checked}}))}/> Show announcement</label></div><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/>{saving?"Saving…":"Save and publish"}</button></div>}
  {tab==="Policies & FAQs"&&<div className="admin-panel"><h2>Policies</h2>{["shipping_information","return_policy","privacy_policy","footer_text"].map(k=><label className="field" key={k}><span>{k.replace(/ /g, "-")}</span><textarea rows={3} value={adminData.settings[k]||""} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,[k]:e.target.value}}))}/></label>)}<h2>FAQs</h2>{adminData.faqs.map((f,i)=><div className="faq-edit" key={f.id}>{field("Question",f.question,v=>setAdminData(d=>({...d,faqs:d.faqs.map((x,j)=>i===j?{...x,question:v}:x)})))}{field("Answer",f.answer,v=>setAdminData(d=>({...d,faqs:d.faqs.map((x,j)=>i===j?{...x,answer:v}:x)})))}<button className="icon-button danger" onClick={()=>setAdminData(d=>({...d,faqs:d.faqs.filter(x=>x.id!==f.id)}))}><Trash2/></button></div>)}<button className="button outline" onClick={()=>setAdminData(d=>({...d,faqs:[...d.faqs,{id:crypto.randomUUID(),question:"New question",answer:"Answer"}]}))}><Plus size={16}/> Add FAQ</button><div className="editor-actions"><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/> Save policies</button></div></div>}
  </main></div>;
  if(view==="cart")return <>{header}<main className="content-page"><span className="eyebrow">YOUR SELECTION</span><h1>Shopping bag</h1>{bag.length===0?<div className="empty-state">Your bag is waiting for something beautiful.</div>:<div className="cart-layout"><div>{bag.map((item,i)=>{const p=data.products.find(x=>x.id===item.id);if(!p)return null;return <div className="cart-item" key={item.id+item.size}><img src={imageFor(p)} alt=""/><div><h3>{p.name}</h3><p>Size: {item.size||"Not selected"}</p><b>{productPrice(p)}</b><div className="qty-control"><button onClick={()=>setBag(b=>b.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x))}><Minus size={14}/></button>{item.qty}<button onClick={()=>setBag(b=>b.map((x,j)=>j===i?{...x,qty:x.qty+1}:x))}><Plus size={14}/></button><button onClick={()=>setBag(b=>b.filter((_,j)=>j!==i))}><Trash2 size={14}/></button></div></div></div>})}</div><aside className="cart-summary"><h2>Order summary</h2><div className="summary-line"><span>Subtotal</span><b>{money(total,currency)}</b></div>{field("Full name",checkoutName,setCheckoutName)}{field("Phone / WhatsApp",checkoutPhone,setCheckoutPhone)}<label className="field"><span>Delivery address</span><textarea rows={3} value={checkoutAddress} onChange={e=>setCheckoutAddress(e.target.value)}/></label><button className="button dark full" onClick={()=>{const msg=`RZIA'S AURA ORDER%0A${bag.map(it=>{const p=data.products.find(x=>x.id===it.id);return `${p?.name} x${it.qty} (size ${it.size})`}).join("%0A")}%0ATotal: ${money(total,currency)}%0AName: ${checkoutName}%0APhone: ${checkoutPhone}%0AAddress: ${checkoutAddress}`;if(!data.settings.whatsapp){notify("Please configure the store WhatsApp number in admin settings.");return}window.open(`https://wa.me/${data.settings.whatsapp.replace(/\\D/g,"")}?text=${msg}`,"_blank")}}>Order via WhatsApp <MessageCircle size={16}/></button><p className="small-note">WhatsApp checkout sends your order details to the store for confirmation. Online card payments are not configured in this starter project.</p></aside></div>}</main></>;
