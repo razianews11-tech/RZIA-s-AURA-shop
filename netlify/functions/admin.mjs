@@ -76,7 +76,8 @@ export default async (req) => {
 
     try {
       const { getStore } = await import("@netlify/blobs");
-      const store = getStore("rzia-aura-live");
+      const store =
+      getStore("rzias-aura-live");
       const body = await req.json();
 
       if (
