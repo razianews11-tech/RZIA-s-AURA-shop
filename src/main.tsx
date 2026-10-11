@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { ArrowRight, Search, ShoppingBag, Heart, Menu, X, ShieldCheck, Instagram, MessageCircle, ChevronDown, Plus, Minus, Trash2, ImagePlus, Save, Package, Settings, LayoutDashboard, LogOut, Upload, Eye, EyeOff, RefreshCw } from "lucide-react";
 import "./styles.css";
 
-type Product = { id:string; name:string; category:string; description:string; price_pkr:number; price_bdt:number; price_eur:number; sizes:string[]; colors:string[]; stock:number; images:string[]; active:boolean; featured:boolean; badge:string };
+type Product = { id:string; name:string; category:string; collection_id?: string; description:string; price_pkr:number; price_bdt:number; price_eur:number; sizes:string[]; colors:string[]; stock:number; images:string[]; active:boolean; featured:boolean; badge:string };
 type StoreData = { products:Product[]; collections:{id:string;name:string;description:string;image:string;active:boolean}[]; settings:Record<string,any>; announcement:{text:string;active:boolean}; faqs:{id:string;question:string;answer:string}[] };
 const defaultData:StoreData = {
   products:[],
@@ -11,7 +11,14 @@ const defaultData:StoreData = {
     {id:"women",name:"Women",description:"Modern silhouettes, timeless grace.",image:"https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1000&q=85",active:true},
     {id:"men",name:"Men",description:"Refined essentials for every day.",image:"https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=1000&q=85",active:true},
     {id:"modest",name:"Modest Wear",description:"Elegance in every detail.",image:"https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?auto=format&fit=crop&w=1000&q=85",active:true}
-  ],
+,
+{
+id:"kurta",
+name:"Kurta",
+description:"Traditional elegance, timeless style.",
+image:"https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1000&q=85",
+active:true
+}  ],
   settings:{brand_name:"RZIA’S AURA",tagline:"THE AURA OF ELEGANCE",hero_heading:"Elegance,\\nRedefined.",hero_text:"Thoughtfully selected fashion for the way you move through the world.",hero_image:"https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=2200&q=90",logo_url:"",about_text:"RZIA’S AURA celebrates modern elegance through considered design, expressive details and timeless style.",whatsapp:"",email:"",address:"",instagram:"",facebook:"",tiktok:"",delivery_charges_pkr:250,free_delivery_above_pkr:5000,shipping_information:"Orders are processed after confirmation. Delivery timelines may vary by destination.",return_policy:"Please contact our team promptly if your order arrives damaged or incorrect.",privacy_policy:"We use customer information only to process and support orders.",footer_text:"Where elegance becomes an attitude."},
   announcement:{text:"WELCOME TO RZIA’S AURA — THE AURA OF ELEGANCE",active:true},
   faqs:[{id:"f1",question:"How do I place an order?",answer:"Add your favourite items to the bag and follow the checkout instructions, or contact us on WhatsApp."},{id:"f2",question:"How can I check my size?",answer:"Review the size options on each product and contact our team if you need guidance."},{id:"f3",question:"How can I contact customer support?",answer:"Use the contact details in the footer or the WhatsApp button when enabled."}]
@@ -61,6 +68,7 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
   <p>Add products, upload photos, set prices and publish them to your storefront.</p>
 
   <button className="button dark" onClick={()=>setEditProduct({
+  collection_id: "",
     id:crypto.randomUUID(),
     name:"",
     category:"Women",
@@ -89,19 +97,28 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
         {["Women","Dresses","Suits","Co-Ords","Abayas/Modest Wear","Men","Kurta","Shalwar Kameez","Unisex","Accessories","New Arrivals"].map(c=><option key={c} value={c}>{c}</option>)}
       </select>
     </label>
-
+<label className="field">
+  <span>Show in collection</span>
+  <select
+    value={editProduct.collection_id || ""}
+    onChange={e =>
+      setEditProduct(p =>
+        p ? { ...p, collection_id: e.target.value } : p
+      )
+    }
+  >
+    <option value="">Select collection</option>
+    {adminData.collections.map(collection => (
+      <option key={collection.id} value={collection.id}>
+        {collection.name}
+      </option>
+    ))}
+  </select>
+</label>
     <label className="field full-span">
       <span>Description</span>
       <textarea rows={4} value={editProduct.description} onChange={e=>setEditProduct(p=>p?{...p,description:e.target.value}:p)}/>
     </label>
-
-    {field("Price in PKR",editProduct.price_pkr,v=>setEditProduct(p=>p?{...p,price_pkr:Number(v)}:p),"number")}
-    {field("Price in BDT",editProduct.price_bdt,v=>setEditProduct(p=>p?{...p,price_bdt:Number(v)}:p),"number")}
-    {field("Price in EUR",editProduct.price_eur,v=>setEditProduct(p=>p?{...p,price_eur:Number(v)}:p),"number")}
-    {field("Stock quantity",editProduct.stock,v=>setEditProduct(p=>p?{...p,stock:Number(v)}:p),"number")}
-    {field("Sizes (comma separated)",editProduct.sizes.join(", "),v=>setEditProduct(p=>p?{...p,sizes:v.split(",").map(s=>s.trim()).filter(Boolean)}:p))}
-    {field("Colours (comma separated)",editProduct.colors.join(", "),v=>setEditProduct(p=>p?{...p,colors:v.split(",").map(s=>s.trim()).filter(Boolean)}:p))}
-    {field("Product badge (e.g. New Arrival)",editProduct.badge,v=>setEditProduct(p=>p?{...p,badge:v}:p))}
 
     <label className="field full-span">
       <span>Product image URLs (one per line)</span>
