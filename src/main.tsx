@@ -162,8 +162,23 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
     <div>
       <b>{p.name}</b>
       <p>{p.category} · PKR {p.price_pkr} · Stock: {p.stock}</p>
-      <button className="button outline" onClick={()=>setEditProduct({...p,images:[...(p.images||[])],sizes:[...(p.sizes||[])],colors:[...(p.colors||[])]})}>Edit</button>
-      <button className="button outline" onClick={()=>removeProduct(p.id)}><Trash2 size={15}/> Delete</button>
+      
+<button
+  type="button"
+  className="button outline"
+  onClick={() => {
+    setEditProduct({
+      ...p,
+      images: [...(p.images || [])],
+      sizes: [...(p.sizes || [])],
+      colors: [...(p.colors || [])]
+    });
+    setTab("Products");
+  }}
+>
+  Edit
+</button>
+   <button className="button outline" onClick={()=>removeProduct(p.id)}><Trash2 size={15}/> Delete</button>
     </div>
   </div>)}
 </div>}
