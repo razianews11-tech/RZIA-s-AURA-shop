@@ -28,3 +28,73 @@
     margin-top: 4px;
   }
 }
+/* Mobile header layout fix */
+@media (max-width: 600px) {
+  .site-header {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 8px;
+  }
+
+  .wordmark-text {
+    min-width: 0;
+  }
+
+  .brand-name {
+    font-size: 12px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .wordmark .monogram {
+    flex-shrink: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .header-actions select {
+    max-width: 55px;
+    font-size: 11px;
+  }
+
+  .header-actions .icon-button {
+    padding: 3px;
+  }
+
+  .founder-credit {
+    font-size: 7px;
+    letter-spacing: 0.3px;
+    white-space: normal;
+  }
+
+  .hero {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .hero-content {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 12vw, 64px);
+  }
+}
