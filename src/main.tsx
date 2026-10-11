@@ -157,8 +157,11 @@ function App(){
     {field("Instagram URL",adminData.settings.instagram,v=>setAdminData(d=>({...d,settings:{...d.settings,instagram:v}})))}
     {field("Facebook URL",adminData.settings.facebook,v=>setAdminData(d=>({...d,settings:{...d.settings,facebook:v}})))}
     {field("TikTok URL",adminData.settings.tiktok,v=>setAdminData(d=>({...d,settings:{...d.settings,tiktok:v}})))}
-    {field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}}),"number")}
-    {field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}}),"number")}
+    
+{field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}})),"number")}
+
+
+{field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}})),"number")}
 
     <label className="field full-span">
       <span>About / Our Story</span>
