@@ -55,6 +55,118 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
  if(view==="admin"&&adminToken)return <div className="admin-shell"><aside className="admin-sidebar"><button className="wordmark admin-wordmark" onClick={()=>navTo("home")}><span className="monogram">RA</span><span>RZIA’S AURA<small>STORE MANAGEMENT</small></span></button><div className="admin-nav">{[["Dashboard",LayoutDashboard],["Products",Package],["Collections",ImagePlus],["Homepage & brand",Settings],["Policies & FAQs",Eye]].map(([name,Icon]:any)=><button className={tab===name?"active":""} onClick={()=>setTab(name)} key={name}><Icon size={17}/>{name}</button>)}</div><button className="admin-logout" onClick={()=>{sessionStorage.removeItem("rzia-admin-token");setAdminToken("");navTo("home")}}><LogOut size={17}/> Sign out</button></aside><main className="admin-main"><div className="admin-top"><div><span className="eyebrow">STORE CONTROL</span><h1>{tab}</h1><p>Manage your storefront and publish changes.</p></div><button className="button outline" onClick={()=>navTo("home")}>View storefront <ArrowRight size={16}/></button></div>
  {tab==="Dashboard"&&<><div className="stats-grid"><div className="stat"><span>Total products</span><b>{adminData.products.length}</b></div><div className="stat"><span>Active products</span><b>{adminData.products.filter(p=>p.active!==false).length}</b></div><div className="stat"><span>Collections</span><b>{adminData.collections.length}</b></div><div className="stat"><span>Storage</span><b>Online</b></div></div><div className="admin-panel"><h2>Quick actions</h2><p>Add products, upload images and update your store content. Always check the save confirmation.</p><button className="button dark" onClick={()=>{setEditProduct({id:crypto.randomUUID(),name:"",category:"Women",description:"",price_pkr:0,price_bdt:0,price_eur:0,sizes:["S","M","L"],colors:[],stock:0,images:[],active:true,featured:false,badge:""});setTab("Products")}}>Add a product <Plus size={16}/></button></div></>}
 
+{tab==="Products"&&<div className="admin-panel">
+  <h2>Manage products</h2>
+  <p>Add products, upload photos, set prices and publish them to your storefront.</p>
+
+  <button className="button dark" onClick={()=>setEditProduct({
+    id:crypto.randomUUID(),
+    name:"",
+    category:"Women",
+    description:"",
+    price_pkr:0,
+    price_bdt:0,
+    price_eur:0,
+    sizes:["S","M","L"],
+    colors:[],
+    stock:0,
+    images:[],
+    active:true,
+    featured:false,
+    badge:""
+  })}>
+    <Plus size={16}/> Add Product
+  </button>
+
+  {editProduct&&<div className="admin-panel">
+    <h2>{adminData.products.some(p=>p.id===editProduct.id)?"Edit product":"New product details"}</h2>
+
+    {field("Product name",editProduct.name,v=>setEditProduct(p=>p?{...p,name:v}:p))}
+    <label className="field">
+      <span>Category</span>
+      <select value={editProduct.category} onChange={e=>setEditProduct(p=>p?{...p,category:e.target.value}:p)}>
+        {["Women","Dresses","Suits","Co-Ords","Abayas/Modest Wear","Men","Kurta","Shalwar Kameez","Unisex","Accessories","New Arrivals"].map(c=><option key={c} value={c}>{c}</option>)}
+      </select>
+    </label>
+
+    <label className="field full-span">
+      <span>Description</span>
+      <textarea rows={4} value={editProduct.description} onChange={e=>setEditProduct(p=>p?{...p,description:e.target.value}:p)}/>
+    </label>
+
+    {field("Price in PKR",editProduct.price_pkr,v=>setEditProduct(p=>p?{...p,price_pkr:Number(v)}:p),"number")}
+    {field("Price in BDT",editProduct.price_bdt,v=>setEditProduct(p=>p?{...p,price_bdt:Number(v)}:p),"number")}
+    {field("Price in EUR",editProduct.price_eur,v=>setEditProduct(p=>p?{...p,price_eur:Number(v)}:p),"number")}
+    {field("Stock quantity",editProduct.stock,v=>setEditProduct(p=>p?{...p,stock:Number(v)}:p),"number")}
+    {field("Sizes (comma separated)",editProduct.sizes.join(", "),v=>setEditProduct(p=>p?{...p,sizes:v.split(",").map(s=>s.trim()).filter(Boolean)}:p))}
+    {field("Colours (comma separated)",editProduct.colors.join(", "),v=>setEditProduct(p=>p?{...p,colors:v.split(",").map(s=>s.trim()).filter(Boolean)}:p))}
+    {field("Product badge (e.g. New Arrival)",editProduct.badge,v=>setEditProduct(p=>p?{...p,badge:v}:p))}
+
+    <label className="field full-span">
+      <span>Product image URLs (one per line)</span>
+      <textarea rows={3} placeholder="Paste image URLs, one per line" value={editProduct.images.join("\n")} onChange={e=>setEditProduct(p=>p?{...p,images:e.target.value.split("\n").map(s=>s.trim()).filter(Boolean)}:p)}/>
+      <span>Or upload product photos</span>
+      <input type="file" accept="image/*" multiple disabled={fileBusy} onChange={async e=>{
+        const input=e.currentTarget;
+        const files=Array.from(input.files||[]);
+        input.value="";
+        if(!files.length)return;
+        if(files.some(f=>f.size>8*1024*1024)){
+          notify("Each image must be smaller than 8 MB.");
+          return;
+        }
+        setFileBusy(true);
+        try{
+          const urls:string[]=[];
+          for(const file of files){
+            const url=await uploadAdmin(file);
+            if(!url)throw Error("A photo upload failed. Please try again.");
+            urls.push(url);
+          }
+          setEditProduct(p=>p?{...p,images:[...p.images,...urls]}:p);
+          notify("Photos uploaded. Press Save product.");
+        }catch(err:any){
+          notify(err.message||"Photo upload failed.");
+        }finally{
+          setFileBusy(false);
+        }
+      }}/>
+      {fileBusy&&<p>Uploading photos…</p>}
+      <div className="editor-grid">
+        {editProduct.images.map((url,i)=><div key={url+i}>
+          <img src={url} alt={"Product "+(i+1)} style={{width:"100%",maxHeight:"180px",objectFit:"contain"}}/>
+          <button type="button" className="button outline" onClick={()=>setEditProduct(p=>p?{...p,images:p.images.filter((_,j)=>j!==i)}:p)}>Remove photo</button>
+        </div>)}
+      </div>
+    </label>
+
+    <label className="check-field">
+      <input type="checkbox" checked={editProduct.active} onChange={e=>setEditProduct(p=>p?{...p,active:e.target.checked}:p)}/>
+      Show product on website
+    </label>
+    <label className="check-field">
+      <input type="checkbox" checked={editProduct.featured} onChange={e=>setEditProduct(p=>p?{...p,featured:e.target.checked}:p)}/>
+      Featured product
+    </label>
+
+    <button className="button dark" disabled={saving||fileBusy||!editProduct.name.trim()} onClick={saveProduct}>
+      <Save size={16}/>{saving?"Saving…":"Save product"}
+    </button>
+    <button className="button outline" onClick={()=>setEditProduct(null)}>Cancel</button>
+  </div>}
+
+  <h2>Existing products ({adminData.products.length})</h2>
+  {adminData.products.length===0?<p>No products added yet. Tap Add Product to create your first item.</p>:adminData.products.map(p=><div className="faq-edit" key={p.id}>
+    {imageFor(p)&&<img src={imageFor(p)} alt={p.name} style={{width:"80px",height:"100px",objectFit:"cover"}}/>}
+    <div>
+      <b>{p.name}</b>
+      <p>{p.category} · PKR {p.price_pkr} · Stock: {p.stock}</p>
+      <button className="button outline" onClick={()=>setEditProduct({...p,images:[...(p.images||[])],sizes:[...(p.sizes||[])],colors:[...(p.colors||[])]})}>Edit</button>
+      <button className="button outline" onClick={()=>removeProduct(p.id)}><Trash2 size={15}/> Delete</button>
+    </div>
+  </div>)}
+</div>}
+   
 {tab==="Collections"&&<div className="admin-panel">
   <h2>Manage collections</h2>
   <p>Edit each collection's name, description and image. Press Save and publish when finished.</p>
