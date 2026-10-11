@@ -46,6 +46,7 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
   ? <img
       className="brand-logo"
       src={data.settings.logo_url}
+      style={{ width: "42px", height: "42px", maxWidth: "42px", objectFit: "contain", flexShrink: 0 }}
       alt={data.settings.brand_name || "RZIA’S AURA"}
     />
   : <span className="monogram">RA</span>}
