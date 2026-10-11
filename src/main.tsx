@@ -244,6 +244,71 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
     {field("Founder name",adminData.settings.founder_name??"Muhammad Kalam",v=>setAdminData(d=>({...d,settings:{...d.settings,founder_name:v}})))}
     {field("Founder title",adminData.settings.founder_title??"Founder & Owner",v=>setAdminData(d=>({...d,settings:{...d.settings,founder_title:v}})))}
 
+<label className="field full-span">
+  <span>Founder photo URL</span>
+  <input
+    type="url"
+    placeholder="Paste founder photo URL"
+    value={adminData.settings.founder_image || ""}
+    onChange={e =>
+      setAdminData(d => ({
+        ...d,
+        settings: {
+          ...d.settings,
+          founder_image: e.target.value
+        }
+      }))
+    }
+  />
+
+  <span>Or upload founder photo</span>
+  <input
+    type="file"
+    accept="image/*"
+    disabled={fileBusy}
+    onChange={async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (file.size > 8 * 1024 * 1024) {
+        notify("Image must be smaller than 8 MB.");
+        e.currentTarget.value = "";
+        return;
+      }
+
+      const url = await uploadAdmin(file);
+
+      if (url) {
+        setAdminData(d => ({
+          ...d,
+          settings: {
+            ...d.settings,
+            founder_image: url
+          }
+        }));
+        notify("Founder photo uploaded. Press Save and publish.");
+      }
+
+      e.currentTarget.value = "";
+    }}
+  />
+
+  {adminData.settings.founder_image && (
+    <img
+      src={adminData.settings.founder_image}
+      alt="Founder preview"
+      style={{
+        width: "100%",
+        maxWidth: "320px",
+        maxHeight: "360px",
+        objectFit: "cover",
+        borderRadius: "8px",
+        marginTop: "12px"
+      }}
+    />
+  )}
+</label>
+    
     <label className="field full-span">
       <span>Founder introduction</span>
       <textarea
@@ -303,6 +368,22 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
  if(view==="info")return <>{header}<main className="content-page"><span className="eyebrow">RZIA’S AURA</span><h1>{info}</h1>
 {info === "Our Story" && (
   <section className="founder-section">
+    
+    {data.settings.founder_image && (
+      <img
+        src={data.settings.founder_image}
+        alt={data.settings.founder_name || "Founder of RZIA’S AURA"}
+        style={{
+          width: "100%",
+          maxWidth: "340px",
+          maxHeight: "420px",
+          objectFit: "cover",
+          borderRadius: "10px",
+          margin: "16px 0"
+        }}
+      />
+    )}
+    
     <span className="eyebrow">MEET THE FOUNDER</span>
     <h2>
       {data.settings.founder_name || "Muhammad Kalam"}
