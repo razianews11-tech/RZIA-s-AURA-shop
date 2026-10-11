@@ -167,14 +167,15 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
   type="button"
   className="button outline"
   onClick={() => {
-    setEditProduct({
-      ...p,
-      images: [...(p.images || [])],
-      sizes: [...(p.sizes || [])],
-      colors: [...(p.colors || [])]
-    });
-    setTab("Products");
-  }}
+  setEditProduct({
+    ...p,
+    images: [...(p.images || [])],
+    sizes: [...(p.sizes || [])],
+    colors: [...(p.colors || [])]
+  });
+  setTab("Products");
+  notify("Product edit form opened");
+}}
 >
   Edit
 </button>
