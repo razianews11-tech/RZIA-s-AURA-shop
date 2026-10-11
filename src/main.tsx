@@ -139,7 +139,6 @@ function App(){
 
 <label className="field full-span">
   <span>Brand logo</span>
-
   <input
     type="url"
     placeholder="Paste logo image URL"
@@ -154,7 +153,8 @@ function App(){
       }))
     }
   />
-
+</label>
+        
   <span>Or upload your logo</span>
   <input
     type="file"
