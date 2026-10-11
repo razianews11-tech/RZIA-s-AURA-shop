@@ -136,12 +136,144 @@ function App(){
       }}
     />
   </div>
-)}{field("Logo image URL",adminData.settings.logo_url,v=>setAdminData(d=>({...d,settings:{...d.settings,logo_url:v}})))}{field("WhatsApp number (international format)",adminData.settings.whatsapp,v=>setAdminData(d=>({...d,settings:{...d.settings,whatsapp:v}})))}{field("Email",adminData.settings.email,v=>setAdminData(d=>({...d,settings:{...d.settings,email:v}})))}{field("Address",adminData.settings.address,v=>setAdminData(d=>({...d,settings:{...d.settings,address:v}})))}{field("Instagram URL",adminData.settings.instagram,v=>setAdminData(d=>({...d,settings:{...d.settings,instagram:v}})))}{field("Facebook URL",adminData.settings.facebook,v=>setAdminData(d=>({...d,settings:{...d.settings,facebook:v}})))}{field("TikTok URL",adminData.settings.tiktok,v=>setAdminData(d=>({...d,settings:{...d.settings,tiktok:v}})))}{field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}})),"number")}{field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}})),"number")}<label className="field full-span"><span>About / Our Story</span><textarea rows={4} value={adminData.settings.about_text} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,about_text:e.target.value}}))}/></label><label className="field full-span"><span>Announcement bar</span><input value={adminData.announcement.text} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,text:e.target.value}}))}/></label><label className="check-field"><input type="checkbox" checked={adminData.announcement.active} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,active:e.target.checked}}))}/> Show announcement</label></div><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/>{saving?"Saving…":"Save and publish"}</button></div>}
+
+<label className="field full-span">
+  <span>Brand logo</span>
+
+  <input
+    type="url"
+    placeholder="Paste logo image URL"
+    value={adminData.settings.logo_url || ""}
+    onChange={e =>
+      setAdminData(d => ({
+        ...d,
+        settings: {
+          ...d.settings,
+          logo_url: e.target.value
+        }
+      }))
+    }
+  />
+
+  <span>Or upload your logo</span>
+  <input
+    type="file"
+    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+    disabled={fileBusy}
+    onChange={async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (file.size > 8 * 1024 * 1024) {
+        notify("Logo must be smaller than 8 MB.");
+        e.target.value = "";
+        return;
+      }
+
+      const url = await uploadAdmin(file);
+
+      if (url) {
+        setAdminData(d => ({
+          ...d,
+          settings: {
+            ...d.settings,
+            logo_url: url
+          }
+        }));
+        notify("Logo uploaded. Press Save and publish.");
+      }
+
+      e.target.value = "";
+    }}
+  />
+
+  {adminData.settings.logo_url && (
+    <>
+      <img
+        src={adminData.settings.logo_url}
+        alt="Brand logo preview"
+        style={{
+          width: "150px",
+          maxHeight: "120px",
+          objectFit: "contain",
+          marginTop: "12px"
+        }}
+      />
+
+      <button
+        type="button"
+        className="button outline"
+        onClick={() =>
+          setAdminData(d => ({
+            ...d,
+            settings: {
+              ...d.settings,
+              logo_url: ""
+            }
+          }))
+        }
+      >
+        Remove logo
+      </button>
+    </>
+  )}
+</label>
+
+{field(
+  "Founder name",
+  adminData.settings.founder_name ?? "Muhammad Kalam",
+  v => setAdminData(d => ({
+    ...d,
+    settings: { ...d.settings, founder_name: v }
+  }))
+)}
+
+{field(
+  "Founder title",
+  adminData.settings.founder_title ?? "Founder & Owner",
+  v => setAdminData(d => ({
+    ...d,
+    settings: { ...d.settings, founder_title: v }
+  }))
+)}
+
+<label className="field full-span">
+  <span>Founder introduction</span>
+  <textarea
+    rows={4}
+    value={adminData.settings.founder_intro ?? ""}
+    onChange={e =>
+      setAdminData(d => ({
+        ...d,
+        settings: {
+          ...d.settings,
+          founder_intro: e.target.value
+        }
+      }))
+    }
+  />
+</label>
+   {field("WhatsApp number (international format)",adminData.settings.whatsapp,v=>setAdminData(d=>({...d,settings:{...d.settings,whatsapp:v}})))}{field("Email",adminData.settings.email,v=>setAdminData(d=>({...d,settings:{...d.settings,email:v}})))}{field("Address",adminData.settings.address,v=>setAdminData(d=>({...d,settings:{...d.settings,address:v}})))}{field("Instagram URL",adminData.settings.instagram,v=>setAdminData(d=>({...d,settings:{...d.settings,instagram:v}})))}{field("Facebook URL",adminData.settings.facebook,v=>setAdminData(d=>({...d,settings:{...d.settings,facebook:v}})))}{field("TikTok URL",adminData.settings.tiktok,v=>setAdminData(d=>({...d,settings:{...d.settings,tiktok:v}})))}{field("Delivery charges (PKR)",adminData.settings.delivery_charges_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,delivery_charges_pkr:Number(v)}})),"number")}{field("Free delivery threshold (PKR)",adminData.settings.free_delivery_above_pkr,v=>setAdminData(d=>({...d,settings:{...d.settings,free_delivery_above_pkr:Number(v)}})),"number")}<label className="field full-span"><span>About / Our Story</span><textarea rows={4} value={adminData.settings.about_text} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,about_text:e.target.value}}))}/></label><label className="field full-span"><span>Announcement bar</span><input value={adminData.announcement.text} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,text:e.target.value}}))}/></label><label className="check-field"><input type="checkbox" checked={adminData.announcement.active} onChange={e=>setAdminData(d=>({...d,announcement:{...d.announcement,active:e.target.checked}}))}/> Show announcement</label></div><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/>{saving?"Saving…":"Save and publish"}</button></div>}
  {tab==="Policies & FAQs"&&<div className="admin-panel"><h2>Policies</h2>{["shipping_information","return_policy","privacy_policy","footer_text"].map(k=><label className="field" key={k}><span>{k.replace(/ /g, "-")}</span><textarea rows={3} value={adminData.settings[k]||""} onChange={e=>setAdminData(d=>({...d,settings:{...d.settings,[k]:e.target.value}}))}/></label>)}<h2>FAQs</h2>{adminData.faqs.map((f,i)=><div className="faq-edit" key={f.id}>{field("Question",f.question,v=>setAdminData(d=>({...d,faqs:d.faqs.map((x,j)=>i===j?{...x,question:v}:x)})))}{field("Answer",f.answer,v=>setAdminData(d=>({...d,faqs:d.faqs.map((x,j)=>i===j?{...x,answer:v}:x)})))}<button className="icon-button danger" onClick={()=>setAdminData(d=>({...d,faqs:d.faqs.filter(x=>x.id!==f.id)}))}><Trash2/></button></div>)}<button className="button outline" onClick={()=>setAdminData(d=>({...d,faqs:[...d.faqs,{id:crypto.randomUUID(),question:"New question",answer:"Answer"}]}))}><Plus size={16}/> Add FAQ</button><div className="editor-actions"><button className="button dark" onClick={()=>protectedSave(adminData)} disabled={saving}><Save size={16}/> Save policies</button></div></div>}
  </main></div>;
  if(view==="cart")return <>{header}<main className="content-page"><span className="eyebrow">YOUR SELECTION</span><h1>Shopping bag</h1>{bag.length===0?<div className="empty-state">Your bag is waiting for something beautiful.</div>:<div className="cart-layout"><div>{bag.map((item,i)=>{const p=data.products.find(x=>x.id===item.id);if(!p)return null;return <div className="cart-item" key={item.id+item.size}><img src={imageFor(p)} alt=""/><div><h3>{p.name}</h3><p>Size: {item.size||"Not selected"}</p><b>{productPrice(p)}</b><div className="qty-control"><button onClick={()=>setBag(b=>b.map((x,j)=>j===i?{...x,qty:Math.max(1,x.qty-1)}:x))}><Minus size={14}/></button>{item.qty}<button onClick={()=>setBag(b=>b.map((x,j)=>j===i?{...x,qty:x.qty+1}:x))}><Plus size={14}/></button><button onClick={()=>setBag(b=>b.filter((_,j)=>j!==i))}><Trash2 size={14}/></button></div></div></div>})}</div><aside className="cart-summary"><h2>Order summary</h2><div className="summary-line"><span>Subtotal</span><b>{money(total,currency)}</b></div>{field("Full name",checkoutName,setCheckoutName)}{field("Phone / WhatsApp",checkoutPhone,setCheckoutPhone)}<label className="field"><span>Delivery address</span><textarea rows={3} value={checkoutAddress} onChange={e=>setCheckoutAddress(e.target.value)}/></label><button className="button dark full" onClick={()=>{const msg=`RZIA'S AURA ORDER%0A${bag.map(it=>{const p=data.products.find(x=>x.id===it.id);return `${p?.name} x${it.qty} (size ${it.size})`}).join("%0A")}%0ATotal: ${money(total,currency)}%0AName: ${checkoutName}%0APhone: ${checkoutPhone}%0AAddress: ${checkoutAddress}`;if(!data.settings.whatsapp){notify("Please configure the store WhatsApp number in admin settings.");return}window.open(`https://wa.me/${data.settings.whatsapp.replace(/\\D/g,"")}?text=${msg}`,"_blank")}}>Order via WhatsApp <MessageCircle size={16}/></button><p className="small-note">WhatsApp checkout sends your order details to the store for confirmation. Online card payments are not configured in this starter project.</p></aside></div>}</main></>;
  if(view==="product"&&selected)return <>{header}<main className="product-detail"><div className="detail-image">{selected.images?.[0]?<img src={selected.images[0]} alt={selected.name}/>:<div className="placeholder-image">RZIA’S AURA</div>}</div><div className="detail-copy"><span className="eyebrow">{selected.category}</span><h1>{selected.name}</h1><div className="detail-price">{productPrice(selected)}</div><p>{selected.description}</p><p><b>Available sizes:</b> {selected.sizes?.join(", ")||"Contact us"}</p><p><b>Colours:</b> {selected.colors?.join(", ")||"As pictured"}</p><p><b>Stock:</b> {selected.stock>0?`${selected.stock} available`:"Contact us for availability"}</p><button className="button dark full" onClick={()=>{if(selected.stock<=0){notify("Please contact us for stock availability.");return}const size=selected.sizes?.[0]||"One size";setBag(b=>[...b,{id:selected.id,qty:1,size}]);notify("Added to bag.");navTo("cart")}}>Add to bag <ShoppingBag size={16}/></button><button className="button outline full" onClick={()=>setWish(w=>w.includes(selected.id)?w.filter(x=>x!==selected.id):[...w,selected.id])}><Heart size={16}/>{wish.includes(selected.id)?"Saved to wishlist":"Add to wishlist"}</button><div className="detail-accordion"><h3>Delivery & care</h3><p>{data.settings.shipping_information}</p><h3>Returns & exchanges</h3><p>{data.settings.return_policy}</p></div></div></main></>;
- if(view==="info")return <>{header}<main className="content-page"><span className="eyebrow">RZIA’S AURA</span><h1>{info}</h1><p className="info-copy">{info==="Our Story"?data.settings.about_text:info==="FAQs"?data.faqs.map(f=>`${f.question}\n${f.answer}`).join("\n\n"):info==="Contact"?`${data.settings.address}\n${data.settings.email}\n${data.settings.whatsapp}`:info==="Shipping"?data.settings.shipping_information:info==="Returns"?data.settings.return_policy:data.settings.privacy_policy}</p>{info==="FAQs"&&data.faqs.map(f=><details className="faq" key={f.id}><summary>{f.question}<ChevronDown size={16}/></summary><p>{f.answer}</p></details>)}</main></>;
+ if(view==="info")return <>{header}<main className="content-page"><span className="eyebrow">RZIA’S AURA</span><h1>{info}</h1>
+{info === "Our Story" && (
+  <section className="founder-section">
+    <span className="eyebrow">MEET THE FOUNDER</span>
+    <h2>
+      {data.settings.founder_name || "Muhammad Kalam"}
+    </h2>
+    <p>
+      {data.settings.founder_title || "Founder & Owner"}
+    </p>
+    {data.settings.founder_intro && (
+      <p>{data.settings.founder_intro}</p>
+    )}
+  </section>
+)}
+   <p className="info-copy">{info==="Our Story"?data.settings.about_text:info==="FAQs"?data.faqs.map(f=>`${f.question}\n${f.answer}`).join("\n\n"):info==="Contact"?`${data.settings.address}\n${data.settings.email}\n${data.settings.whatsapp}`:info==="Shipping"?data.settings.shipping_information:info==="Returns"?data.settings.return_policy:data.settings.privacy_policy}</p>{info==="FAQs"&&data.faqs.map(f=><details className="faq" key={f.id}><summary>{f.question}<ChevronDown size={16}/></summary><p>{f.answer}</p></details>)}</main></>;
  return <>{header}<main><section className="hero" style={{backgroundImage:`linear-gradient(90deg,rgba(28,20,15,.64),rgba(28,20,15,.04)),url("${data.settings.hero_image}")`}}><div className="hero-content"><span className="eyebrow light">THE WORLD OF RZIA’S AURA</span><h1>{data.settings.hero_heading.split("\\n").map((x:string,i:number)=><React.Fragment key={i}>{i>0&&<br/>}{x}</React.Fragment>)}</h1><p>{data.settings.hero_text}</p><button className="button light-button" onClick={()=>document.getElementById("shop")?.scrollIntoView({behavior:"smooth"})}>Explore the collection <ArrowRight size={16}/></button></div><div className="hero-caption">A STUDY IN TIMELESS STYLE</div></section><section className="trust-strip"><span>Thoughtfully selected</span><i/> <span>Designed for everyday elegance</span><i/> <span>Made to be remembered</span></section><section className="section collections-section"><div className="section-heading"><div><span className="eyebrow">CURATED FOR YOU</span><h2>Explore our world</h2></div><p>Pieces to make every moment feel considered.</p></div><div className="collection-grid">{data.collections.filter(c=>c.active!==false).map(c=><button className="collection-card" key={c.id} onClick={()=>{setCategory(c.name);document.getElementById("shop")?.scrollIntoView({behavior:"smooth"})}}><img src={c.image} alt={c.name}/><span><b>{c.name}</b><small>{c.description}</small><i>Discover <ArrowRight size={14}/></i></span></button>)}</div></section><section id="shop" className="section shop-section"><div className="section-heading"><div><span className="eyebrow">THE EDIT</span><h2>Discover the collection</h2></div><label className="search-box"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search pieces…"/></label></div><div className="category-chips">{["All","Women","Men","Unisex","Modest Wear","Accessories","New Arrivals"].map(c=><button key={c} className={category===c?"selected":""} onClick={()=>setCategory(c)}>{c}</button>)}</div>{loading?<div className="empty-state"><RefreshCw className="spin"/> Loading collection…</div>:products.length===0?<div className="empty-state"><span className="eyebrow">THE COLLECTION IS GROWING</span><h3>{search?"No pieces match your search":"Your next favourite piece belongs here."}</h3><p>Visit us again soon, or check back after our next collection launch.</p></div>:<div className="product-grid">{products.map(p=><article className="product-card" key={p.id}><button className="product-photo" onClick={()=>{setSelected(p);navTo("product")}}>{imageFor(p)?<img src={imageFor(p)} alt={p.name}/>:<div className="placeholder-image">RZIA’S AURA</div>}{p.badge&&<span className="product-badge">{p.badge}</span>}<button className="heart-button" onClick={e=>{e.stopPropagation();setWish(w=>w.includes(p.id)?w.filter(x=>x!==p.id):[...w,p.id])}} aria-label="Wishlist"><Heart size={17} fill={wish.includes(p.id)?"currentColor":"none"}/></button></button><div className="product-meta"><span>{p.category}</span><button onClick={()=>{setSelected(p);navTo("product")}}>{p.name}</button><div><b>{productPrice(p)}</b>{p.stock<=0&&<small>Sold out</small>}</div></div></article>)}</div>}</section><section className="story-band"><div><span className="eyebrow light">OUR PHILOSOPHY</span><h2>Elegance is not a moment.<br/>It is an attitude.</h2><p>{data.settings.about_text}</p><button className="button light-button" onClick={()=>{setInfo("Our Story");navTo("info")}}>Discover our story <ArrowRight size={16}/></button></div><div className="story-image" style={{backgroundImage:`url("${data.settings.hero_image}")`}}/></section><section className="newsletter"><span className="eyebrow">A NOTE FROM THE AURA</span><h2>Stay close to the new.</h2><p>Discover new arrivals, edits and stories from RZIA’S AURA.</p><form onSubmit={e=>{e.preventDefault();notify("Thank you for your interest. Newsletter delivery requires an email marketing provider.");}}><input type="email" placeholder="Your email address" required/><button className="button dark" type="submit">Join the list <ArrowRight size={16}/></button></form></section></main><footer className="site-footer"><div className="footer-brand"><span className="monogram">RA</span><h2>{data.settings.brand_name}</h2><p>{data.settings.footer_text}</p><div className="social-links">{data.settings.instagram&&<a href={data.settings.instagram} target="_blank" rel="noreferrer"><Instagram/></a>}{data.settings.facebook&&<a href={data.settings.facebook} target="_blank" rel="noreferrer">f</a>}{data.settings.tiktok&&<a href={data.settings.tiktok} target="_blank" rel="noreferrer">♪</a>}</div></div><div className="footer-links"><div><b>EXPLORE</b>{["Our Story","FAQs","Contact"].map(x=><button key={x} onClick={()=>{setInfo(x);navTo("info")}}>{x}</button>)}</div><div><b>HELP & POLICIES</b>{["Shipping","Returns","Privacy Policy"].map(x=><button key={x} onClick={()=>{setInfo(x);navTo("info")}}>{x}</button>)}</div><div><b>CONTACT</b><span>{data.settings.email}</span><span>{data.settings.address}</span>{data.settings.whatsapp&&<a href={`https://wa.me/${data.settings.whatsapp.replace(/\\D/g,"")}`}><MessageCircle size={15}/> WhatsApp us</a>}</div></div><div className="copyright">© {new Date().getFullYear()} {data.settings.brand_name}. All rights reserved.</div><button className="admin-footer" onClick={()=>navTo("login")}>Store administration</button></footer>{notice&&<div className="toast">{notice}</div>}</>;
 }
 createRoot(document.getElementById("root")!).render(<React.StrictMode><App/></React.StrictMode>);
