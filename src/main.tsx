@@ -172,6 +172,25 @@ const header=<><div className="announcement">{data.announcement.active&&data.ann
   <h2>Manage collections</h2>
   <p>Edit each collection's name, description and image. Press Save and publish when finished.</p>
 
+<button
+  className="button dark"
+  onClick={() => setAdminData(d => ({
+    ...d,
+    collections: [
+      ...d.collections,
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        description: "",
+        image: "",
+        active: true
+      }
+    ]
+  }))}
+>
+  <Plus size={16} /> Add New Collection
+</button>
+  
   {adminData.collections.map((collection,index)=>(
     <div className="admin-panel" key={collection.id}>
       <h3>{collection.name||"Collection"}</h3>
