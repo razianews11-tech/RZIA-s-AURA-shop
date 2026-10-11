@@ -41,12 +41,111 @@ function App(){
  const navTo=(v:any)=>{setView(v);setMobileMenu(false);window.scrollTo({top:0,behavior:"smooth"})};
  
 
-const header=<><div className="announcement">{data.announcement.active&&data.announcement.text}</div><header className="site-header"><button className="icon-button mobile-only" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="Menu">{mobileMenu?<X/>:<Menu/>}</button><button className="wordmark" onClick={()=>navTo("home")}><span className="monogram">RA</span><span className="wordmark-text"><span className="brand-name">{data.settings.brand_name}</span><small>{data.settings.tagline}</small><small className="founder-credit">FOUNDER &amp; OWNER · MUHAMMAD KALAM SHIKDER</small></span></button><nav className={mobileMenu?"nav-links open":"nav-links"}><button onClick={()=>{setCategory("All");navTo("home")}}>Home</button><button onClick={()=>{setCategory("Women");navTo("home")}}>Women</button><button onClick={()=>{setCategory("Men");navTo("home")}}>Men</button><button onClick={()=>{setCategory("Modest Wear");navTo("home")}}>Modest Wear</button><button onClick={()=>{setCategory("New Arrivals");navTo("home")}}>New Arrivals</button><button onClick={()=>{setInfo("Our Story");navTo("info")}}>Our Story</button></nav><div className="header-actions"><select value={currency} onChange={e=>setCurrency(e.target.value)} aria-label="Currency"><option>PKR</option><option>BDT</option><option>EUR</option></select><button className="icon-button" onClick={()=>{const s=prompt("Search RZIA’S AURA products",search);if(s!==null)setSearch(s)}} aria-label="Search"><Search/></button><button className="icon-button" onClick={()=>navTo("cart")} aria-label="Shopping bag"><ShoppingBag/><i>{bag.reduce((s,x)=>s+x.qty,0)}</i></button><button className="icon-button" onClick={()=>navTo("login")} aria-label="Admin login"><ShieldCheck/></button></div></header></>;
+const header=<><div className="announcement">{data.announcement.active&&data.announcement.text}</div><header className="site-header"><button className="icon-button mobile-only" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="Menu">{mobileMenu?<X/>:<Menu/>}</button><button className="wordmark" onClick={()=>navTo("home")}>
+{data.settings.logo_url
+  ? <img
+      className="brand-logo"
+      src={data.settings.logo_url}
+      alt={data.settings.brand_name || "RZIA’S AURA"}
+    />
+  : <span className="monogram">RA</span>}
+  <span className="wordmark-text"><span className="brand-name">{data.settings.brand_name}</span><small>{data.settings.tagline}</small><small className="founder-credit">FOUNDER &amp; OWNER · MUHAMMAD KALAM SHIKDER</small></span></button><nav className={mobileMenu?"nav-links open":"nav-links"}><button onClick={()=>{setCategory("All");navTo("home")}}>Home</button><button onClick={()=>{setCategory("Women");navTo("home")}}>Women</button><button onClick={()=>{setCategory("Men");navTo("home")}}>Men</button><button onClick={()=>{setCategory("Modest Wear");navTo("home")}}>Modest Wear</button><button onClick={()=>{setCategory("New Arrivals");navTo("home")}}>New Arrivals</button><button onClick={()=>{setInfo("Our Story");navTo("info")}}>Our Story</button></nav><div className="header-actions"><select value={currency} onChange={e=>setCurrency(e.target.value)} aria-label="Currency"><option>PKR</option><option>BDT</option><option>EUR</option></select><button className="icon-button" onClick={()=>{const s=prompt("Search RZIA’S AURA products",search);if(s!==null)setSearch(s)}} aria-label="Search"><Search/></button><button className="icon-button" onClick={()=>navTo("cart")} aria-label="Shopping bag"><ShoppingBag/><i>{bag.reduce((s,x)=>s+x.qty,0)}</i></button><button className="icon-button" onClick={()=>navTo("login")} aria-label="Admin login"><ShieldCheck/></button></div></header></>;
 
   if(view==="login")return <div className="admin-screen login-screen">{header}<form className="login-card" onSubmit={signIn}><span className="eyebrow">PRIVATE ACCESS</span><h1>Admin sign in</h1><p>This area is reserved for authorised store administrators.</p>{field("Username",loginUser,setLoginUser)}{field("Password",loginPass,setLoginPass,"password")}<button className="button dark full" type="submit">Sign in <ArrowRight size={16}/></button><button type="button" className="text-button" onClick={()=>navTo("home")}>Return to store</button></form></div>;
  if(view==="admin"&&adminToken)return <div className="admin-shell"><aside className="admin-sidebar"><button className="wordmark admin-wordmark" onClick={()=>navTo("home")}><span className="monogram">RA</span><span>RZIA’S AURA<small>STORE MANAGEMENT</small></span></button><div className="admin-nav">{[["Dashboard",LayoutDashboard],["Products",Package],["Collections",ImagePlus],["Homepage & brand",Settings],["Policies & FAQs",Eye]].map(([name,Icon]:any)=><button className={tab===name?"active":""} onClick={()=>setTab(name)} key={name}><Icon size={17}/>{name}</button>)}</div><button className="admin-logout" onClick={()=>{sessionStorage.removeItem("rzia-admin-token");setAdminToken("");navTo("home")}}><LogOut size={17}/> Sign out</button></aside><main className="admin-main"><div className="admin-top"><div><span className="eyebrow">STORE CONTROL</span><h1>{tab}</h1><p>Manage your storefront and publish changes.</p></div><button className="button outline" onClick={()=>navTo("home")}>View storefront <ArrowRight size={16}/></button></div>
  {tab==="Dashboard"&&<><div className="stats-grid"><div className="stat"><span>Total products</span><b>{adminData.products.length}</b></div><div className="stat"><span>Active products</span><b>{adminData.products.filter(p=>p.active!==false).length}</b></div><div className="stat"><span>Collections</span><b>{adminData.collections.length}</b></div><div className="stat"><span>Storage</span><b>Online</b></div></div><div className="admin-panel"><h2>Quick actions</h2><p>Add products, upload images and update your store content. Always check the save confirmation.</p><button className="button dark" onClick={()=>{setEditProduct({id:crypto.randomUUID(),name:"",category:"Women",description:"",price_pkr:0,price_bdt:0,price_eur:0,sizes:["S","M","L"],colors:[],stock:0,images:[],active:true,featured:false,badge:""});setTab("Products")}}>Add a product <Plus size={16}/></button></div></>}
 
+{tab==="Collections"&&<div className="admin-panel">
+  <h2>Manage collections</h2>
+  <p>Edit each collection's name, description and image. Press Save and publish when finished.</p>
+
+  {adminData.collections.map((collection,index)=>(
+    <div className="admin-panel" key={collection.id}>
+      <h3>{collection.name||"Collection"}</h3>
+
+      {field("Collection name",collection.name,v=>
+        setAdminData(d=>({...d,collections:d.collections.map((c,i)=>
+          i===index?{...c,name:v}:c
+        )}))
+      )}
+
+      {field("Collection description",collection.description,v=>
+        setAdminData(d=>({...d,collections:d.collections.map((c,i)=>
+          i===index?{...c,description:v}:c
+        )}))
+      )}
+
+      <label className="field full-span">
+        <span>Collection image URL</span>
+        <input
+          type="url"
+          value={collection.image||""}
+          placeholder="Paste image URL"
+          onChange={e=>setAdminData(d=>({...d,collections:d.collections.map((c,i)=>
+            i===index?{...c,image:e.target.value}:c
+          )}))}
+        />
+
+        <span>Or upload a new collection image</span>
+        <input
+          type="file"
+          accept="image/*"
+          disabled={fileBusy}
+          onChange={async e=>{
+            const file=e.target.files?.[0];
+            if(!file)return;
+
+            if(file.size>8*1024*1024){
+              notify("Image must be smaller than 8 MB.");
+              e.currentTarget.value="";
+              return;
+            }
+
+            const url=await uploadAdmin(file);
+
+            if(url){
+              setAdminData(d=>({...d,collections:d.collections.map((c,i)=>
+                i===index?{...c,image:url}:c
+              )}));
+              notify("Image uploaded. Press Save and publish.");
+            }
+
+            e.currentTarget.value="";
+          }}
+        />
+
+        {collection.image&&
+          <img
+            src={collection.image}
+            alt={collection.name}
+            style={{width:"100%",maxHeight:"240px",objectFit:"cover",borderRadius:"8px",marginTop:"12px"}}
+          />
+        }
+      </label>
+
+      <label className="check-field">
+        <input
+          type="checkbox"
+          checked={collection.active!==false}
+          onChange={e=>setAdminData(d=>({...d,collections:d.collections.map((c,i)=>
+            i===index?{...c,active:e.target.checked}:c
+          )}))}
+        />
+        Show this collection on the website
+      </label>
+    </div>
+  ))}
+
+  <button
+    className="button dark"
+    onClick={()=>protectedSave(adminData)}
+    disabled={saving}
+  >
+    <Save size={16}/>
+    {saving?"Saving…":"Save and publish"}
+  </button>
+</div>}
+   
 {tab==="Homepage & brand"&&<div className="admin-panel">
   <h2>Homepage and brand settings</h2>
   <div className="editor-grid">
